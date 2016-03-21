@@ -43,6 +43,7 @@ class Fluent::GrepCounterOutput < Fluent::Output
   config_param :aggregate, :string, :default => 'tag'
   config_param :replace_invalid_sequence, :bool, :default => false
   config_param :store_file, :string, :default => nil
+  config_param :include_keys, :string, :default => nil
 
   attr_accessor :counts
   attr_accessor :matches
@@ -123,6 +124,8 @@ class Fluent::GrepCounterOutput < Fluent::Output
         raise Fluent::ConfigError, "#{@store_file} is not writable"
       end
     end
+
+    @include_keys = @include_keys.split(',') if @include_keys
 
     @matches = {}
     @counts  = {}
@@ -243,6 +246,9 @@ class Fluent::GrepCounterOutput < Fluent::Output
     if @input_key
       output['message'] = @delimiter ? matches.join(@delimiter) : matches
     else
+      @include_keys.each do |key|
+        output[key] = matches.map {|m| m.has_key?(key) ? m[key] : nil }.compact.join(@delimiter || ',')
+      end
       # no 'message' field in the case of regexpN and excludeN
     end
     if tag
