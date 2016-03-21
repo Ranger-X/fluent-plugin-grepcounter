@@ -125,7 +125,7 @@ class Fluent::GrepCounterOutput < Fluent::Output
       end
     end
 
-    @include_keys = @include_keys ? @include_keys.split(',') : []
+    @include_keys = @include_keys.nil? ? [] : @include_keys.split(',')
 
     @matches = {}
     @counts  = {}
