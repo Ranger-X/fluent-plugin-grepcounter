@@ -125,7 +125,7 @@ class Fluent::GrepCounterOutput < Fluent::Output
       end
     end
 
-    @include_keys = @include_keys.split(',') if @include_keys
+    @include_keys = @include_keys ? @include_keys.split(',') : []
 
     @matches = {}
     @counts  = {}
@@ -246,8 +246,13 @@ class Fluent::GrepCounterOutput < Fluent::Output
     if @input_key
       output['message'] = @delimiter ? matches.join(@delimiter) : matches
     else
-      @include_keys.each do |key|
-        output[key] = matches.map {|m| m.has_key?(key) ? m[key] : nil }.compact.join(@delimiter || ',')
+      if @include_keys.include?('full_message')
+        # output full message as a string
+        output['full_message'] = matches.to_s
+      else
+        @include_keys.each do |key|
+          output[key] = matches.map {|m| m.has_key?(key) ? m[key] : nil }.compact.join(@delimiter || ',')
+        end
       end
       # no 'message' field in the case of regexpN and excludeN
     end
