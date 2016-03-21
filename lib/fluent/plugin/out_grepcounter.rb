@@ -243,19 +243,22 @@ class Fluent::GrepCounterOutput < Fluent::Output
     return nil if @greater_equal and count <  @greater_equal
     output = {}
     output['count'] = count
+
     if @input_key
       output['message'] = @delimiter ? matches.join(@delimiter) : matches
     else
-      if @include_keys.include?('full_message')
-        # output full message as a string
-        output['full_message'] = matches.to_s
-      else
-        @include_keys.each do |key|
-          output[key] = matches.map {|m| m.has_key?(key) ? m[key] : nil }.compact.join(@delimiter || ',')
-        end
-      end
       # no 'message' field in the case of regexpN and excludeN
     end
+
+    if @include_keys.include?('full_message')
+      # output full message as a string
+      output['full_message'] = matches.to_s
+    else
+      @include_keys.each do |key|
+        output[key] = matches.map {|m| m.has_key?(key) ? m[key] : nil }.compact.join(@delimiter || ',')
+      end
+    end
+
     if tag
       output['input_tag'] = tag
       output['input_tag_last'] = tag.split('.').last
